@@ -140,7 +140,7 @@ export function Verdict({ state, calculations }: VerdictProps) {
       doc.addImage(img, 'PNG', 0, 0, img.width, img.height)
       doc.save('Sleep-ROI-Report.pdf')
     }
-    img.src = '/sleep-roi-report.png'
+    img.src = '/sleep-roi-calculator/assets/sleep-roi-report.png'
   }
 
   return (
