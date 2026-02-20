@@ -17,19 +17,19 @@ interface CostDashboardProps {
 }
 
 const tooltips = {
-  productivity: "We estimate daily earning potential lost on poor sleep days using your morning sharpness, afternoon crash, and error rate, adjusted for your checked disruptors. Source: RAND Corporation (2016) found sleep-deprived workers cost the US economy up to $411 billion annually in lost productivity.",
+  productivity: "We estimate annual earning potential lost from poor sleep using your morning sharpness, afternoon crash, and error rate, adjusted for your checked disruptors. Source: RAND Corporation (2016) found sleep-deprived workers cost the US economy up to $411 billion annually in lost productivity.",
   healthcare: "Includes your reported medical visits plus estimated annual costs for each condition you checked that is clinically linked to poor sleep. Source: CDC estimates sleep disorders cost the US healthcare system over $15 billion annually.",
   stimulants: "This is what you spend annually compensating for low sleep energy with caffeine and supplements — money spent treating a symptom rather than fixing the root cause.",
-  career: "RAND Corporation (2016) found sleep-deprived workers are measurably less productive and less likely to earn raises. This estimates annual career value lost through compounding underperformance. Hidden if employment type is 'Not Currently Employed'.",
-  cognitive: "Johns Hopkins research shows each hour below 7 hours of sleep measurably impairs memory, decision-making, and problem-solving. This estimates the financial cost of that impairment on your role."
+  career: "This isn't about today's output — it's about what you stop earning over time. Poor sleep makes you less sharp in meetings, less visible to leadership, and less confident negotiating raises. Someone performing at 80% of their potential for a few years earns significantly less than their well-rested peers — even if they never miss a deadline. Source: RAND Corporation (2016).",
+  cognitive: "This is separate from productivity loss. You can finish every task on your list and still lose money here. Cognitive decline affects the quality of your thinking — the deal negotiated poorly, the hire you misjudged, the detail you missed in a contract. Johns Hopkins research shows sleep-deprived people make measurably worse decisions even when they feel fine. This hits hardest if your role involves judgment, negotiation, hiring, or strategy."
 }
 
 const tileConfig = [
-  { key: 'productivityCost', label: 'Productivity Loss', description: 'Daily earnings lost on poor sleep days', tooltip: tooltips.productivity },
+  { key: 'productivityCost', label: 'Productivity Loss', description: 'Annual earnings lost to reduced output on poor sleep nights', tooltip: tooltips.productivity },
   { key: 'healthcareCost', label: 'Healthcare Costs', description: 'Medical visits + condition-related expenses', tooltip: tooltips.healthcare },
   { key: 'stimulantCost', label: 'Stimulant Spending', description: 'Caffeine & supplements to compensate', tooltip: tooltips.stimulants },
   { key: 'careerCost', label: 'Career Impact', description: 'Reduced raises & promotion potential', tooltip: tooltips.career },
-  { key: 'cognitiveDeclineCost', label: 'Cognitive Decline', description: 'Memory & decision-making impairment', tooltip: tooltips.cognitive },
+  { key: 'cognitiveDeclineCost', label: 'Cognitive Decline', description: 'Value lost through poor decisions and judgment — separate from how much work you completed', tooltip: tooltips.cognitive },
   { key: 'totalAnnualCost', label: 'Total Annual Cost', description: 'Combined cost of poor sleep', tooltip: '', isTotal: true }
 ]
 
@@ -48,9 +48,9 @@ export function CostDashboard({ calculations }: CostDashboardProps) {
       </div>
 
       {calculations.capWarning && (
-        <div className="mb-6 p-4 bg-gold/20 border border-gold rounded-xl text-center">
-          <p className="text-gold font-medium">
-            We've applied conservative caps to keep this realistic.
+        <div className="mb-6 p-3 bg-gray-800/50 border border-gray-700 rounded-xl text-center">
+          <p className="text-gray-400 text-sm">
+            Conservative caps applied to keep estimates realistic.
           </p>
         </div>
       )}

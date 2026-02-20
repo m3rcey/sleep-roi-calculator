@@ -1,9 +1,15 @@
 import { SleepAuditState, DISRUPTORS } from '../App'
 import { formatCurrency } from '../utils/format'
+import { jsPDF } from 'jspdf'
 
 interface CalculationResults {
   totalAnnualCost: number
   totalInvestment: number
+  productivityCost: number
+  healthcareCost: number
+  stimulantCost: number
+  careerCost: number
+  cognitiveDeclineCost: number
   roiScenarios: {
     key: string
     label: string
@@ -17,6 +23,16 @@ interface CalculationResults {
 interface VerdictProps {
   state: SleepAuditState
   calculations: CalculationResults
+}
+
+function getBaseResolution(totalInvestment: number): number {
+  if (totalInvestment <= 1500) return 20
+  if (totalInvestment <= 2500) return 35
+  if (totalInvestment <= 3500) return 48
+  if (totalInvestment <= 4999) return 58
+  if (totalInvestment <= 6499) return 68
+  if (totalInvestment <= 8399) return 78
+  return 88
 }
 
 export function Verdict({ state, calculations }: VerdictProps) {
@@ -35,6 +51,7 @@ export function Verdict({ state, calculations }: VerdictProps) {
     : 'sleep deprivation and productivity loss'
 
   const moderateScenario = roiScenarios.find(s => s.key === 'moderate')!
+  const baseResolution = getBaseResolution(totalInvestment)
 
   // Build recommendations
   const recommendations: string[] = []
@@ -57,6 +74,73 @@ export function Verdict({ state, calculations }: VerdictProps) {
   }
   if (checked.includes('allergies')) {
     recommendations.push("Hypoallergenic mattress materials can reduce allergen exposure and the nighttime congestion you reported.")
+  }
+
+  const buildEmailBody = () => {
+    const allDisruptors = state.checkedDisruptors
+      .map(id => DISRUPTORS.find(d => d.id === id))
+      .filter(Boolean)
+      .map(d => d!.label)
+      .join(', ') || 'None'
+    
+    const br = '\n'
+    return `YOUR SLEEP AUDIT RESULTS` + br +
+      `══════════════════════════════════════════` + br + br +
+      `📊 YOUR SLEEP PROFILE` + br +
+      `• Sleep Hours per Night: ${state.sleepHoursPerNight}` + br +
+      `• Poor Sleep Nights per Week: ${state.poorSleepNightsPerWeek}` + br +
+      `• Morning Sharpness (1-10): ${state.morningSharpness}/10` + br +
+      `• Afternoon Energy Crash: ${state.afternoonCrash ? 'Yes - frequently' : 'No - stable'}` + br +
+      `• Error Rate: ${state.errorsLevel}` + br +
+      `• Work Days per Week: ${state.workDaysPerWeek}` + br + br +
+      `💰 ANNUAL COST BREAKDOWN` + br +
+      `══════════════════════════════════════════` + br +
+      `• Productivity Loss: ${formatCurrency(calculations.productivityCost || 0)}` + br +
+      `• Healthcare Costs: ${formatCurrency(calculations.healthcareCost || 0)}` + br +
+      `• Stimulant Spending: ${formatCurrency(calculations.stimulantCost || 0)}` + br +
+      `• Career Impact: ${formatCurrency(calculations.careerCost || 0)}` + br +
+      `• Cognitive Decline: ${formatCurrency(calculations.cognitiveDeclineCost || 0)}` + br +
+      `──────────────────────────────────────────` + br +
+      `• TOTAL ANNUAL COST: ${formatCurrency(totalAnnualCost)}` + br + br +
+      `🔧 YOUR IDENTIFIED SLEEP DISRUPTORS` + br +
+      allDisruptors + br + br +
+      `💡 RECOMMENDED SOLUTIONS` + br +
+      recommendations.map((r, i) => `${i + 1}. ${r}`).join(br) + br + br +
+      `💵 INVESTMENT & ROI` + br +
+      `══════════════════════════════════════════` + br +
+      `• Recommended Investment: ${formatCurrency(totalInvestment)}` + br +
+      `  - Mattress: ${formatCurrency(state.mattressCost)}` + br +
+      `  - Adjustable Base: ${formatCurrency(state.adjustableBaseCost)}` + br +
+      `  - Sleep Issues Resolved: ${baseResolution}%` + br + br +
+      `• Conservative Scenario:` + br +
+      `  - Annual Savings: ${formatCurrency(Math.round(totalAnnualCost * 0.55 * 0.70))}` + br +
+      `  - Payback: ${Math.round(totalInvestment / (totalAnnualCost * 0.55 * 0.70 / 12))} months` + br +
+      `  - 5-Year Gain: ${formatCurrency(Math.round(totalAnnualCost * 0.55 * 0.70 * 5 - totalInvestment))}` + br + br +
+      `• Moderate Scenario:` + br +
+      `  - Annual Savings: ${formatCurrency(Math.round(totalAnnualCost * 0.55))}` + br +
+      `  - Payback: ${moderateScenario.paybackMonths.toFixed(0)} months` + br +
+      `  - 5-Year Gain: ${formatCurrency(moderateScenario.fiveYearNetGain)}` + br + br +
+      `• Optimistic Scenario:` + br +
+      `  - Annual Savings: ${formatCurrency(Math.round(Math.min(totalAnnualCost * 0.55 * 1.25, totalAnnualCost * 0.92)))}` + br +
+      `  - Payback: ${Math.round(totalInvestment / (totalAnnualCost * 0.55 * 1.25 / 12))} months` + br +
+      `  - 5-Year Gain: ${formatCurrency(Math.round(Math.min(totalAnnualCost * 0.55 * 1.25, totalAnnualCost * 0.92) * 5 - totalInvestment))}` + br + br +
+      `══════════════════════════════════════════` + br +
+      `This Sleep ROI Calculator was created by Joshua Williams - not affiliated with, endorsed by, or representing Mattress Firm.`
+  }
+
+  const downloadPDF = () => {
+    // Load the pre-generated report image and wrap it in a PDF
+    const img = new Image()
+    img.onload = () => {
+      const doc = new jsPDF({
+        orientation: img.width > img.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [img.width, img.height]
+      })
+      doc.addImage(img, 'PNG', 0, 0, img.width, img.height)
+      doc.save('Sleep-ROI-Report.pdf')
+    }
+    img.src = '/sleep-roi-report.png'
   }
 
   return (
@@ -91,12 +175,42 @@ export function Verdict({ state, calculations }: VerdictProps) {
           </div>
         )}
 
-        <button className="w-full md:w-auto px-8 py-4 bg-gold text-bg-dark font-semibold rounded-lg text-lg hover:bg-yellow-400 transition-colors">
-          See the Sleep Setup Matched to My Results →
-        </button>
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <button 
+            onClick={downloadPDF}
+            className="w-full md:w-auto px-8 py-4 bg-gold text-bg-dark font-semibold rounded-lg text-lg hover:bg-yellow-400 transition-colors"
+          >
+            Download PDF
+          </button>
+          
+          <button 
+            onClick={() => {
+              const body = buildEmailBody()
+              window.location.href = `mailto:?subject=${encodeURIComponent('Your Sleep Audit Results')}&body=${encodeURIComponent(body)}`
+            }}
+            className="w-full md:w-auto px-8 py-4 bg-gray-700 text-white font-semibold rounded-lg text-lg hover:bg-gray-600 transition-colors"
+          >
+            Email Results
+          </button>
+
+          <button 
+            onClick={() => {
+              const body = buildEmailBody()
+              navigator.clipboard.writeText(body).then(() => {
+                alert('Results copied to clipboard!')
+              }).catch(() => {
+                alert('Could not copy to clipboard. Please select and copy manually.')
+              })
+            }}
+            className="w-full md:w-auto px-8 py-4 bg-gray-600 text-white font-semibold rounded-lg text-lg hover:bg-gray-500 transition-colors"
+          >
+            Copy Results
+          </button>
+        </div>
         
         <p className="text-gray-500 text-sm mt-4">
-          No account required. Your data never leaves this page.
+          No account required. Your data never leaves this page.<br/>
+          <span className="text-gray-600">Note: Email opens your default mail app. To use Outlook, set it as default in iPhone Settings → Mail → Default Mail App.</span>
         </p>
       </div>
     </div>

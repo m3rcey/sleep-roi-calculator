@@ -11,3 +11,41 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Print styles for PDF generation */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .bg-bg-dark, .bg-card-bg, .bg-gray-700, .bg-gray-800 {
+    background-color: white !important;
+  }
+  
+  .text-white, .text-gray-300, .text-gray-400 {
+    color: black !important;
+  }
+  
+  .text-gold {
+    color: #b8860b !important;
+  }
+  
+  .text-alert-red {
+    color: #dc2626 !important;
+  }
+  
+  .text-healthy-green {
+    color: #16a34a !important;
+  }
+  
+  button, input[type="range"] {
+    display: none !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}

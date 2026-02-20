@@ -71,8 +71,8 @@ function App() {
     medicalVisitsPerYear: 3,
     avgVisitCost: 125,
     caffeineMonthlyCost: 60,
-    mattressCost: 2500,
-    adjustableBaseCost: 1800,
+    mattressCost: 5699,
+    adjustableBaseCost: 2699,
   })
 
   const calculations = useMemo(() => {
@@ -209,12 +209,13 @@ function App() {
       
       <CostDashboard calculations={calculations} />
       
+      <Charts calculations={calculations} />
+      
       <InvestmentCalculator
         state={state}
         updateState={updateState}
+        totalAnnualCost={calculations.totalAnnualCost}
       />
-      
-      <Charts calculations={calculations} />
       
       <Verdict state={state} calculations={calculations} />
       
