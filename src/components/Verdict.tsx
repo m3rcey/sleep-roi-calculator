@@ -132,13 +132,21 @@ export function Verdict({ state, calculations }: VerdictProps) {
     // Load the pre-generated report image and wrap it in a PDF
     const img = new Image()
     img.onload = () => {
-      const doc = new jsPDF({
-        orientation: img.width > img.height ? 'landscape' : 'portrait',
-        unit: 'px',
-        format: [img.width, img.height]
-      })
-      doc.addImage(img, 'PNG', 0, 0, img.width, img.height)
-      doc.save('Sleep-ROI-Report.pdf')
+      try {
+        const doc = new jsPDF({
+          orientation: img.width > img.height ? 'landscape' : 'portrait',
+          unit: 'px',
+          format: [img.width, img.height]
+        })
+        doc.addImage(img, 'PNG', 0, 0, img.width, img.height)
+        doc.save('Sleep-ROI-Report.pdf')
+      } catch (e) {
+        console.error('PDF generation error:', e)
+        alert('Error generating PDF. Please try again.')
+      }
+    }
+    img.onerror = () => {
+      alert('Error loading report image. Please refresh and try again.')
     }
     img.src = '/sleep-roi-calculator/assets/sleep-roi-report.png'
   }
